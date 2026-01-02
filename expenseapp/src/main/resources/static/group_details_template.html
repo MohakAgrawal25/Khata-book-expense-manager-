@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Loading Group...</title>
+    <link rel="stylesheet" href="group_details_template.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; 
+            min-height: 100vh; 
+        }
+        
+        .tab-button.active { 
+            border-bottom: 3px solid #4f46e5; 
+            color: #4f46e5; 
+            font-weight: 600; 
+        }
+        
+        .loading-spinner { 
+            border: 4px solid #f3f3f3; 
+            border-top-color: #4f46e5; 
+            border-radius: 50%; 
+            width: 2rem; 
+            height: 2rem; 
+            animation: spin 1s linear infinite; 
+        }
+        
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+
+        #user-message-box {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            max-width: 90%;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #user-message-box.show {
+            opacity: 1;
+        }
+        
+        .modal-table th, .modal-table td {
+            padding: 0.5rem 0.25rem;
+            text-align: center;
+        }
+
+        .modal-table th:first-child, .modal-table td:first-child {
+            text-align: left;
+            padding-left: 0;
+            width: 40%;
+        }
+    </style> -->
+</head>
+<body>
+
+<div class="min-h-screen p-4 sm:p-8">
+    <header class="mb-8 p-4 bg-white rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 flex flex-col sm:flex-row items-start sm:items-center justify-between">
+            <span id="group-name" class="text-indigo-600 truncate max-w-full sm:max-w-xl">...</span>
+            <button id="add-expense-btn" class="mt-2 sm:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out flex items-center">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                Add Expense
+            </button>
+        </h1>
+        <p class="text-gray-500 mt-1" id="group-description">Loading details...</p>
+        <div class="text-sm text-gray-500 mt-2">
+            Created by: <span id="group-creator" class="font-medium"></span> | Members: <span id="member-count" class="font-medium"></span>
+        </div>
+    </header>
+    
+    <div id="user-message-box" class="p-4 rounded-lg shadow-xl hidden" role="alert"></div>
+
+    <div class="bg-white rounded-xl shadow-lg p-2 mb-6">
+        <div class="flex border-b border-gray-200 overflow-x-auto">
+            <button class="tab-button active py-2 px-4 text-gray-600 hover:text-indigo-600 whitespace-nowrap" data-tab="expenses">Expenses</button>
+            <button class="tab-button py-2 px-4 text-gray-600 hover:text-indigo-600 whitespace-nowrap" data-tab="members">Members</button>
+            <button class="tab-button py-2 px-4 text-gray-600 hover:text-indigo-600 whitespace-nowrap" data-tab="announcements">Announcements</button>
+            <a href="homepage.html" class="py-2 px-4 text-gray-600 hover:text-gray-800 ml-auto flex items-center whitespace-nowrap" aria-label="Back to Dashboard">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div id="tab-content" class="min-h-64">
+        
+        <div id="loading" class="flex flex-col items-center justify-center p-10 bg-white rounded-xl shadow-lg">
+            <div class="loading-spinner" role="status"></div>
+            <p class="mt-4 text-lg text-gray-600">Fetching group data...</p>
+        </div>
+
+        <div id="expenses" class="tab-pane">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Recent Expenses</h2>
+            <div id="expenses-list"></div>
+            <p id="no-expenses" class="text-center py-4 text-gray-500 hidden">No expenses have been added yet.</p>
+            
+            <!-- Load More Button -->
+            <button id="load-more-expenses-btn" class="w-full mt-4 px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-150 hidden">
+                Load More Expenses
+            </button>
+        </div>
+        
+        <div id="members" class="tab-pane hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-800">Group Members</h2>
+                <button id="add-member-btn" class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    Add Member
+                </button>
+            </div>
+            <div id="members-list" class="bg-white p-6 rounded-xl shadow-md flex flex-wrap gap-4">
+                <p class="text-gray-500 w-full">Member list loading...</p>
+            </div>
+        </div>
+
+        <div id="announcements" class="tab-pane hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-800">Group Announcements</h2>
+                <button id="add-announcement-btn" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-2.81A7 7 0 0010 6v1M12 21a2 2 0 002-2H10a2 2 0 002 2z"></path></svg>
+                    New Announcement
+                </button>
+            </div>
+            <div id="announcements-list" class="space-y-4">
+                <p id="no-announcements" class="text-gray-500 bg-white p-4 rounded-lg shadow-sm">Loading announcements...</p>
+            </div>
+        </div>
+
+        <div id="error-message" class="hidden p-6 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-lg">
+            <p class="font-bold text-lg">Failed to Load Group Data</p>
+            <p class="mt-1" id="error-details"></p>
+            <p class="mt-2 text-sm">Please ensure the backend is running and you have a valid JWT.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Expense Modal -->
+<div id="expense-modal" class="fixed inset-0 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative max-h-[90vh] overflow-hidden">
+        <h2 id="expense-modal-title" class="text-2xl font-bold text-gray-800 mb-4">Add New Expense</h2>
+        <div id="expense-modal-body" class="overflow-y-auto max-h-[70vh] pr-2">
+            <form id="add-expense-form">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-700">Total Amount (₹)</label>
+                        <input type="number" step="0.01" id="amount" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-lg font-bold" min="0.01" value="0.00" oninput="window.handleExpenseFormChanges()">
+                    </div>
+                    <div>
+                        <label for="paidBy" class="block text-sm font-medium text-gray-700">Paid By (You)</label>
+                        <input type="text" id="paidBy" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50" readonly>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <input type="text" id="description" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g., Dinner at Italian Place">
+                </div>
+                
+                <h3 class="text-lg font-semibold text-gray-700 mt-6 mb-2">Split Details</h3>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full modal-table divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                                <th class="text-xs font-medium text-gray-500 uppercase tracking-wider">Owed (Default Split)</th>
+                                <th class="text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                                <th class="text-xs font-medium text-gray-500 uppercase tracking-wider">Net (Paid - Owed)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-split-table-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="split-summary-area" class="mt-4">
+                    <div id="split-summary" class="p-3 bg-gray-50 rounded-lg text-sm font-medium text-gray-700 flex justify-between">
+                        <span>Remaining to Assign: <span id="remaining-amount" class="text-red-600 font-bold">₹0.00</span></span>
+                        <span>Owed Total: <span id="owed-total-summary" class="text-gray-800 font-bold">₹0.00</span></span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="window.closeModal('expense-modal')" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">Cancel</button>
+                    <button type="submit" id="submit-expense-btn" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-150">Submit Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Member Modal -->
+<div id="member-modal" class="fixed inset-0 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Add New Member</h2>
+        <form id="add-member-form">
+            <div class="mb-4">
+                <label for="memberUsernameInput" class="block text-sm font-medium text-gray-700">Member Username</label>
+                <input type="text" id="memberUsernameInput" required placeholder="Enter username to invite" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+            </div>
+            <p class="text-sm text-gray-500 mb-6">Note: The user must already be registered in the system.</p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="window.closeModal('member-modal')" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">Cancel</button>
+                <button type="submit" id="submit-member-btn" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150">Add User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Announcement Modal -->
+<div id="announcement-modal" class="fixed inset-0 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Post New Announcement</h2>
+        <form id="add-announcement-form">
+            <div class="mb-4">
+                <label for="announcementTitle" class="block text-sm font-medium text-gray-700">Title (Optional)</label>
+                <input type="text" id="announcementTitle" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g., Important: Trip Payment Due">
+            </div>
+            <div class="mb-6">
+                <label for="announcementDescription" class="block text-sm font-medium text-gray-700">Message</label>
+                <textarea id="announcementDescription" required rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="Enter your announcement details here..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="window.closeModal('announcement-modal')" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">Cancel</button>
+                <button type="submit" id="submit-announcement-btn" class="px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition duration-150">Post Announcement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    // --- Global Configuration and State ---
+    window.apiUrlBase = '/api/groups/'; 
+    window.currentGroupId = null;
+    window.currentUsername = "CurrentUser";
+    window.currentGroupMembers = []; 
+    
+    // --- UI elements (Initialized here for global access)
+    window.loadingEl = document.getElementById('loading');
+    window.errorEl = document.getElementById('error-message');
+    window.errorDetailsEl = document.getElementById('error-details');
+    window.tabButtons = document.querySelectorAll('.tab-button');
+    window.tabPanes = document.querySelectorAll('.tab-pane');
+    window.userMessageEl = document.getElementById('user-message-box');
+    window.paidByInput = document.getElementById('paidBy');
+
+    // --- JWT & Auth Functions ---
+    function decodeJwtUsername(jwtToken) {
+        if (!jwtToken) return null;
+        try {
+            const payload = jwtToken.split('.')[1];
+            const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+            const data = JSON.parse(decoded);
+            return data.username || data.sub || null;
+        } catch {
+            return null;
+        }
+    }
+
+    function checkAuthAndGetUsername() {
+        let token = localStorage.getItem('jwtToken');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const username = decodeJwtUsername(token);
+        if (username) {
+            window.currentUsername = username.toLowerCase();
+            if (window.paidByInput) window.paidByInput.value = window.currentUsername;
+        } else {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+        }
+        return token;
+    }
+    
+    // --- UI Utilities (Message Box and Modals) ---
+    window.alertUserMessage = function(message, type = 'success') {
+        if (!window.userMessageEl) return;
+        window.userMessageEl.className = 'p-4 rounded-lg shadow-xl';
+        window.userMessageEl.textContent = message;
+        window.userMessageEl.classList.remove('bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'hidden', 'show');
+        if (type === 'error') {
+            window.userMessageEl.classList.add('bg-red-100', 'text-red-800');
+        } else if (type === 'warning') {
+            window.userMessageEl.classList.add('bg-yellow-100', 'text-yellow-800');
+        } else {
+            window.userMessageEl.classList.add('bg-green-100', 'text-green-800');
+        }
+        window.userMessageEl.classList.add('show');
+        clearTimeout(window.userMessageEl.timeout);
+        window.userMessageEl.timeout = setTimeout(() => {
+            window.userMessageEl.classList.remove('show');
+            setTimeout(() => window.userMessageEl.classList.add('hidden'), 500); 
+        }, 5000); 
+    };
+
+    window.handleError = function(message) {
+        if (window.loadingEl) window.loadingEl.classList.add('hidden');
+        if (window.errorEl && window.errorDetailsEl) {
+            window.errorDetailsEl.textContent = message;
+            window.errorEl.classList.remove('hidden');
+        }
+        window.alertUserMessage(message, 'error');
+    };
+
+    window.openModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    };
+
+    window.closeModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            if (modalId === 'expense-modal') {
+                document.getElementById('add-expense-form')?.reset();
+            } else if (modalId === 'member-modal') {
+                document.getElementById('add-member-form')?.reset();
+            } else if (modalId === 'announcement-modal') {
+                document.getElementById('add-announcement-form')?.reset();
+            }
+        }
+    };
+    
+    // --- Data Fetching and Rendering (Base) ---
+    
+    // Member functionality remains here as it's tightly coupled to the core group state
+    async function handleAddMember(event) {
+        event.preventDefault();
+        let token = localStorage.getItem('jwtToken');
+        if (!window.currentGroupId || !token) {
+            window.handleError("Error: Group or authentication token missing. Please re-login."); 
+            return;
+        }
+
+        const memberUsername = document.getElementById('memberUsernameInput').value.trim().toLowerCase();
+        
+        if (memberUsername.length === 0) {
+            window.alertUserMessage("Please enter a username.", 'warning');
+            return;
+        }
+        
+        if (window.currentGroupMembers.some(m => (typeof m === 'object' ? m.username.toLowerCase() : m.toLowerCase()) === memberUsername)) {
+            window.alertUserMessage(`User "${memberUsername}" is already a member!`, 'warning');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-member-btn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+        }
+
+        try {
+            const encodedUsername = encodeURIComponent(memberUsername);
+            const response = await fetch(`${window.apiUrlBase}${window.currentGroupId}/members?username=${encodedUsername}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `HTTP Error ${response.status}: ${response.statusText}.`;
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = `Server Error: ${errorJson.message || errorJson.error || 'Unknown error'}`;
+                } catch (e) {
+                    errorMessage += ` Server message snippet: ${errorText.substring(0, 100)}...`;
+                }
+                throw new Error(errorMessage);
+            }
+
+            window.closeModal('member-modal');
+            window.alertUserMessage(`Successfully added user "${memberUsername}". Refreshing group data...`, 'success');
+            await fetchGroupDetails(window.currentGroupId); 
+            window.switchTab('members'); 
+
+        } catch (error) {
+            window.handleError(`Failed to add member: ${error.message}`);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add User';
+            }
+        }
+    }
+    
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+    
+    function extractGroupIdFromSlug(slug) {
+        if (!slug) return null;
+        const parts = slug.split('_');
+        const numericId = parts[parts.length - 1];
+        if (/^\d+$/.test(numericId)) {
+            return numericId;
+        }
+        return null;
+    }
+    
+    window.switchTab = function(tabId) {
+        window.tabButtons.forEach(btn => btn.classList.remove('active'));
+        window.tabPanes.forEach(pane => pane.classList.add('hidden'));
+
+        const activeBtn = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+        const activePane = document.getElementById(tabId);
+        
+        if (activeBtn) activeBtn.classList.add('active');
+        if (activePane) activePane.classList.remove('hidden');
+        
+        // Call the external fetch function if it exists on the window object
+        if (tabId === 'announcements' && window.currentGroupId && window.fetchAnnouncements) {
+            window.fetchAnnouncements(window.currentGroupId);
+        }
+    };
+    
+    window.fetchGroupDetails = async function(groupId) {
+        let token = localStorage.getItem('jwtToken');
+        if (!token) {
+            window.handleError('Authentication Failed: No JWT token found. Redirecting to login.');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        window.currentGroupId = groupId;
+        if (window.loadingEl) window.loadingEl.classList.remove('hidden');
+        if (window.errorEl) window.errorEl.classList.add('hidden');
+
+        try {
+            const response = await fetch(window.apiUrlBase + groupId, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                let errorText = await response.text();
+                let errorMessage = `HTTP Error ${response.status}: ${response.statusText}.`;
+                throw new Error(errorMessage + ` Server message: ${errorText.substring(0, 100)}...`);
+            }
+
+            const groupData = await response.json();
+            
+            if (window.loadingEl) window.loadingEl.classList.add('hidden');
+            
+            // Store members globally for expense modal use
+            window.currentGroupMembers = groupData.members || []; 
+            
+            renderGroup(groupData);
+            
+            // Re-call the active tab's fetch function
+            const activeTabButton = document.querySelector('.tab-button.active');
+            const initialTab = activeTabButton ? activeTabButton.dataset.tab : 'expenses';
+            
+            if (initialTab === 'announcements' && window.fetchAnnouncements) {
+                window.fetchAnnouncements(groupId);
+            }
+            if (initialTab === 'expenses' && window.renderExpenses) {
+                window.renderExpenses(groupData.expenses || []);
+            }
+
+        } catch (error) {
+            if (window.loadingEl) window.loadingEl.classList.add('hidden');
+            window.handleError(`Failed to fetch group details. Error: ${error.message}`);
+        }
+    };
+    
+    function renderGroup(group) {
+        document.getElementById('page-title').textContent = `${group.name} - Expense Tracker`;
+        document.getElementById('group-name').textContent = group.name;
+        document.getElementById('group-description').textContent = group.description;
+        document.getElementById('group-creator').textContent = group.createdBy || 'N/A';
+        document.getElementById('member-count').textContent = (group.members ? group.members.length : '0');
+
+        // Only call render functions if they have been loaded (from external modules)
+        if (window.renderExpenses) window.renderExpenses(group.expenses || []);
+        renderMembers(group.members || []);
+    }
+    
+    function renderMembers(members) {
+        const list = document.getElementById('members-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+        
+        if (!Array.isArray(members) || members.length === 0) {
+            list.innerHTML = `<p class="text-gray-500 w-full">No members listed.</p>`;
+            return;
+        }
+
+        members.forEach(member => {
+            const username = typeof member === 'object' && member !== null && member.username ? member.username : member;
+            const isCurrentUser = username.toLowerCase() === window.currentUsername.toLowerCase();
+            const badgeColor = isCurrentUser ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-600';
+            const badgeText = isCurrentUser ? ' (You)' : '';
+
+            const item = document.createElement('div');
+            item.className = 'flex items-center p-3 rounded-lg border border-gray-200 w-full sm:w-1/2 lg:w-1/3 min-w-40 transition duration-150 hover:border-indigo-400';
+            item.innerHTML = `
+                <svg class="w-5 h-5 mr-3 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="font-medium text-gray-800 truncate">${username}</span>
+                <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${badgeColor}">${badgeText.trim() || 'Member'}</span>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // --- INITIALIZE & EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Check Auth and set currentUsername
+        checkAuthAndGetUsername(); 
+
+        // 2. Extract Group ID from URL
+        const urlSlug = getQueryParam('slug'); 
+
+        if (urlSlug) {
+            const groupId = extractGroupIdFromSlug(urlSlug);
+            if (groupId) {
+                // 3. Fetch Data for the specific group
+                window.fetchGroupDetails(groupId);
+            } else {
+                window.handleError("Invalid group slug format. Cannot find Group ID in URL.");
+            }
+        } else {
+            window.handleError("Could not find group slug in the URL. Please return to the group listing page.");
+        }
+
+        // Attach Tab listeners
+        window.tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                window.switchTab(e.target.dataset.tab);
+            });
+        });
+
+        // Attach Modal Open listeners
+        document.getElementById('add-expense-btn')?.addEventListener('click', () => window.openModal('expense-modal'));
+        document.getElementById('add-member-btn')?.addEventListener('click', () => window.openModal('member-modal'));
+        document.getElementById('add-announcement-btn')?.addEventListener('click', () => window.openModal('announcement-modal'));
+        
+        // Form submission handlers
+        document.getElementById('add-member-form')?.addEventListener('submit', handleAddMember);
+    });
+</script>
+
+<script type="module" src="expenses-with-pagination.js"></script>
+<script type="module" src="announcements.js"></script>
+
+</body>
+</html>

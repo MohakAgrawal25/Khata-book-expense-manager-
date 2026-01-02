@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Prediction - Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #059669;
+            --primary-light: #10b981;
+            --primary-lighter: #34d399;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #0ea5e9;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 50%, var(--primary-lighter) 100%);
+            position: relative;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(5, 150, 105, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(52, 211, 153, 0.2) 0%, transparent 50%);
+            animation: float 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            33% { transform: translateY(-15px) scale(1.02); }
+            66% { transform: translateY(10px) scale(0.98); }
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header Section */
+        .main-header {
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Cards */
+        .prediction-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border: none !important;
+            border-radius: 20px !important;
+            box-shadow: 
+                0 8px 20px rgba(5, 150, 105, 0.2),
+                0 2px 4px rgba(5, 150, 105, 0.1) !important;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            color: #374151;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .prediction-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 
+                0 15px 35px rgba(5, 150, 105, 0.25),
+                0 4px 8px rgba(5, 150, 105, 0.15) !important;
+        }
+
+        /* Card Header */
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color)) !important;
+            color: white !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding: 1.5rem 2rem !important;
+            border: none !important;
+            border-radius: 20px 20px 0 0 !important;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(5, 150, 105, 0.1);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .form-group-custom {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label .required {
+            color: var(--danger-color);
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+            outline: none;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        /* Range Sliders */
+        .range-slider-container {
+            margin-top: 0.5rem;
+        }
+
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Buttons */
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color)) !important;
+            color: white !important;
+            border: none !important;
+            padding: 1rem 2rem !important;
+            border-radius: 15px !important;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3) !important;
+        }
+
+        .btn-custom:active {
+            transform: translateY(0);
+        }
+
+        /* Result Card */
+        .result-card {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .probability-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .probability-approved {
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            color: white;
+        }
+
+        .probability-rejected {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            color: white;
+        }
+
+        /* Risk and Recommendation Cards */
+        .risk-factors {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger-color);
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+
+        .recommendations {
+            background: rgba(14, 165, 233, 0.1);
+            border-left: 4px solid var(--info-color);
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(16, 185, 129, 0.2);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Alert Messages */
+        .alert-custom {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-header {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .probability-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 2rem;
+            }
+            
+            .card-header h3 {
+                font-size: 1.25rem;
+            }
+            
+            .card-header {
+                padding: 1rem !important;
+            }
+            
+            .btn-custom {
+                padding: 0.875rem 1.5rem !important;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            .metric-card {
+                padding: 1rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="loading-spinner" role="status"></div>
+            <h4 class="mt-3 text-success">Processing with AI...</h4>
+            <p class="text-muted">Analyzing your loan application details</p>
+            <div class="progress mt-3" style="width: 200px; height: 6px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     style="width: 100%; background-color: var(--primary-color);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-header">
+        <div class="container">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+                        <div class="mb-3 mb-md-0">
+                            <h1 class="text-white">
+                                <i class="fas fa-hand-holding-usd me-3"></i>
+                                AI Loan Approval Prediction
+                            </h1>
+                            <p class="text-white-50 mb-0">Get instant loan approval predictions using machine learning</p>
+                        </div>
+                        <div class="d-flex flex-column align-items-end">
+                            <div class="status-badge status-success mb-2" id="serviceStatus">
+                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                Checking Service...
+                            </div>
+                            <small class="text-white-50" id="modelStatus">Checking model...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Card -->
+            <div class="prediction-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-clipboard-check"></i> Loan Application Form</h3>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Prediction Form -->
+                    <form id="loanPredictionForm">
+                        <!-- Personal Information Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="fas fa-user"></i> Personal Information
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-birthday-cake"></i> Age
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="person_age" 
+                                               name="person_age" min="18" max="100" value="35" required>
+                                        <div class="form-help">Must be between 18-100 years</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>18</span>
+                                                <span>100</span>
+                                            </div>
+                                            <input type="range" id="person_age_slider" min="18" max="100" value="35">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-money-bill-wave"></i> Annual Income ($)
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="person_income" 
+                                               name="person_income" min="10000" max="1000000" value="75000" required>
+                                        <div class="form-help">Your yearly income before taxes</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>$10K</span>
+                                                <span>$1M</span>
+                                            </div>
+                                            <input type="range" id="person_income_slider" min="10000" max="1000000" value="75000">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-briefcase"></i> Employment Experience (Years)
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="person_emp_exp" 
+                                               name="person_emp_exp" min="0" max="50" value="8">
+                                        <div class="form-help">Total years of work experience</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-credit-card"></i> Credit Score
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="credit_score" 
+                                               name="credit_score" min="300" max="850" value="720" required>
+                                        <div class="form-help">Your credit score (300-850 range)</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>300</span>
+                                                <span>850</span>
+                                            </div>
+                                            <input type="range" id="credit_score_slider" min="300" max="850" value="720">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-venus-mars"></i> Gender
+                                        </label>
+                                        <select class="form-control-custom" id="person_gender" name="person_gender">
+                                            <option value="male" selected>Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-home"></i> Home Ownership
+                                        </label>
+                                        <select class="form-control-custom" id="person_home_ownership" name="person_home_ownership">
+                                            <option value="RENT">Rent</option>
+                                            <option value="OWN">Own</option>
+                                            <option value="MORTGAGE" selected>Mortgage</option>
+                                            <option value="OTHER">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Loan Details Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="fas fa-file-contract"></i> Loan Details
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-hand-holding-usd"></i> Loan Amount ($)
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="loan_amnt" 
+                                               name="loan_amnt" min="1000" max="500000" value="25000" required>
+                                        <div class="form-help">Amount you want to borrow</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>$1K</span>
+                                                <span>$500K</span>
+                                            </div>
+                                            <input type="range" id="loan_amnt_slider" min="1000" max="500000" value="25000">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-percentage"></i> Interest Rate (%)
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="number" step="0.1" class="form-control-custom" id="loan_int_rate" 
+                                               name="loan_int_rate" min="1" max="30" value="6.5" required>
+                                        <div class="form-help">Annual interest rate for the loan</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>1%</span>
+                                                <span>30%</span>
+                                            </div>
+                                            <input type="range" id="loan_int_rate_slider" min="1" max="30" step="0.1" value="6.5">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-calculator"></i> Loan/Income Ratio (%)
+                                        </label>
+                                        <input type="number" step="0.01" class="form-control-custom" id="loan_percent_income" 
+                                               name="loan_percent_income" min="0.01" max="1.0" value="0.33">
+                                        <div class="form-help">Loan amount as percentage of annual income</div>
+                                        <div class="range-slider-container">
+                                            <div class="range-values">
+                                                <span>1%</span>
+                                                <span>100%</span>
+                                            </div>
+                                            <input type="range" id="loan_percent_income_slider" min="0.01" max="1.0" step="0.01" value="0.33">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-history"></i> Credit History Length (Years)
+                                        </label>
+                                        <input type="number" class="form-control-custom" id="cb_person_cred_hist_length" 
+                                               name="cb_person_cred_hist_length" min="0" max="50" value="12">
+                                        <div class="form-help">Length of your credit history</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-bullseye"></i> Loan Purpose
+                                        </label>
+                                        <select class="form-control-custom" id="loan_intent" name="loan_intent">
+                                            <option value="PERSONAL">Personal Use</option>
+                                            <option value="EDUCATION">Education</option>
+                                            <option value="MEDICAL">Medical</option>
+                                            <option value="VENTURE">Business Venture</option>
+                                            <option value="HOMEIMPROVEMENT" selected>Home Improvement</option>
+                                            <option value="DEBTCONSOLIDATION">Debt Consolidation</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-exclamation-triangle"></i> Previous Defaults
+                                        </label>
+                                        <select class="form-control-custom" id="previous_loan_defaults_on_file" name="previous_loan_defaults_on_file">
+                                            <option value="No" selected>No Defaults</option>
+                                            <option value="Yes">Has Defaults</option>
+                                        </select>
+                                        <div class="form-help">Previous loan payment defaults on record</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-chart-line"></i> Loan Grade
+                                            <span class="required">*</span>
+                                        </label>
+                                        <select class="form-control-custom" id="loan_grade" name="loan_grade" required>
+                                            <option value="A" selected>A (Excellent)</option>
+                                            <option value="B">B (Good)</option>
+                                            <option value="C">C (Average)</option>
+                                            <option value="D">D (Below Average)</option>
+                                            <option value="E">E (Poor)</option>
+                                            <option value="F">F (Very Poor)</option>
+                                        </select>
+                                        <div class="form-help">Loan quality grade assigned by lender</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-custom">
+                                        <label class="form-label">
+                                            <i class="fas fa-balance-scale"></i> Debt-to-Income Ratio
+                                        </label>
+                                        <input type="number" step="0.01" class="form-control-custom" id="debt_to_income_ratio" 
+                                               name="debt_to_income_ratio" min="0.01" max="1.0" value="0.35">
+                                        <div class="form-help">Monthly debt payments divided by monthly income</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn-custom btn-lg" id="predictButton">
+                                <i class="fas fa-bolt me-2"></i> Predict Loan Approval
+                            </button>
+                            <p class="text-muted mt-2 small">Click to get AI-powered prediction</p>
+                        </div>
+                    </form>
+                    
+                    <!-- Result Section -->
+                    <div class="prediction-card result-card mt-4" id="resultCard">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Prediction Result</h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <div class="probability-circle" id="probabilityCircle">
+                                    85%
+                                </div>
+                                <h2 id="predictionResult" class="mb-2">Approved</h2>
+                                <p class="text-muted" id="predictionText">High probability of approval</p>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h5 class="section-title mb-3">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i> Risk Factors
+                                    </h5>
+                                    <div id="riskFactors">
+                                        <div class="risk-factors">
+                                            <i class="fas fa-info-circle me-2"></i> No significant risk factors identified
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5 class="section-title mb-3">
+                                        <i class="fas fa-lightbulb text-info"></i> Recommendations
+                                    </h5>
+                                    <div id="recommendations">
+                                        <div class="recommendations">
+                                            <i class="fas fa-check-circle me-2"></i> Good financial profile
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h5 class="section-title mb-3">
+                                    <i class="fas fa-chart-bar text-success"></i> Prediction Metrics
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="metric-card">
+                                            <div class="metric-value" id="confidenceValue">92%</div>
+                                            <div class="metric-label">Confidence</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="metric-card">
+                                            <div class="metric-value" id="approvalProbability">85%</div>
+                                            <div class="metric-label">Approval Probability</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="metric-card">
+                                            <div class="metric-value" id="rejectionProbability">15%</div>
+                                            <div class="metric-label">Rejection Probability</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button onclick="resetForm()" class="btn-custom">
+                                    <i class="fas fa-redo me-2"></i> Make Another Prediction
+                                </button>
+                                <button onclick="shareResult()" class="btn-custom ms-2" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;">
+                                    <i class="fas fa-share me-2"></i> Share Result
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Info -->
+            <div class="prediction-card">
+                <div class="card-body">
+                    <h5 class="section-title mb-3">
+                        <i class="fas fa-info-circle"></i> Service Information
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-brain fa-2x text-success mb-2"></i>
+                                <h6>AI Model</h6>
+                                <p class="small text-muted mb-0" id="modelInfo">Checking model type...</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <h6>Comprehensive Analysis</h6>
+                                <p class="small text-muted mb-0">Multiple financial factors analyzed</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="p-3">
+                                <i class="fas fa-bolt fa-2x text-warning mb-2"></i>
+                                <h6>Real-time Prediction</h6>
+                                <p class="small text-muted mb-0">Instant results with detailed insights</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button onclick="checkApiStatus()" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-sync-alt me-2"></i> Refresh Service Status
+                        </button>
+                        <button onclick="showApiInfo()" class="btn btn-outline-info btn-sm ms-2">
+                            <i class="fas fa-code me-2"></i> API Information
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smart API URL detection
+        const API_BASE_URL = (function() {
+            const currentUrl = window.location;
+            const isLocalhost = currentUrl.hostname === 'localhost' || 
+                               currentUrl.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                // Development: Check which port we're on
+                if (currentUrl.port === '8080') {
+                    // Accessing from Spring Boot, use Flask port
+                    return `http://${currentUrl.hostname}:5001`;
+                } else if (currentUrl.port === '5001') {
+                    // Accessing from Flask directly
+                    return currentUrl.origin;
+                }
+            }
+            
+            // Production or unknown: assume same origin
+            return currentUrl.origin;
+        })();
+        
+        console.log('API Base URL:', API_BASE_URL);
+        console.log('Current URL:', window.location.href);
+        
+        // DOM Elements
+        const form = document.getElementById('loanPredictionForm');
+        const resultCard = document.getElementById('resultCard');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const serviceStatus = document.getElementById('serviceStatus');
+        const modelStatus = document.getElementById('modelStatus');
+        const modelInfo = document.getElementById('modelInfo');
+        const predictButton = document.getElementById('predictButton');
+        
+        // Test connection on load
+        async function testConnection() {
+            try {
+                console.log('Testing connection to:', `${API_BASE_URL}/health`);
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                console.log('Connection test result:', data);
+                return data.status === 'healthy';
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                return false;
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page loaded from:', window.location.origin);
+            
+            // Initialize UI components
+            initializeSliders();
+            calculateLoanPercentIncome();
+            
+            // Test connection and update status
+            const isConnected = await testConnection();
+            
+            if (isConnected) {
+                await checkApiStatus();
+            } else {
+                serviceStatus.innerHTML = '<i class="fas fa-times-circle me-2"></i>Cannot Connect to API';
+                serviceStatus.className = 'status-badge status-danger';
+                modelStatus.textContent = 'Please start Flask server on port 5001';
+                
+                showAlert('warning', 
+                    `Cannot connect to prediction API.<br>
+                     Make sure Flask is running on port 5001.<br>
+                     Current API URL: ${API_BASE_URL}`);
+            }
+            
+            // Add event listeners
+            document.getElementById('person_income').addEventListener('input', calculateLoanPercentIncome);
+            document.getElementById('loan_amnt').addEventListener('input', calculateLoanPercentIncome);
+        });
+        
+        // Initialize range sliders
+        function initializeSliders() {
+            const sliders = [
+                { input: 'person_age', slider: 'person_age_slider' },
+                { input: 'person_income', slider: 'person_income_slider' },
+                { input: 'credit_score', slider: 'credit_score_slider' },
+                { input: 'loan_amnt', slider: 'loan_amnt_slider' },
+                { input: 'loan_int_rate', slider: 'loan_int_rate_slider' },
+                { input: 'loan_percent_income', slider: 'loan_percent_income_slider' }
+            ];
+            
+            sliders.forEach(item => {
+                const input = document.getElementById(item.input);
+                const slider = document.getElementById(item.slider);
+                
+                if (input && slider) {
+                    // Update slider when input changes
+                    input.addEventListener('input', function() {
+                        slider.value = this.value;
+                        if (item.input === 'person_income' || item.input === 'loan_amnt') {
+                            calculateLoanPercentIncome();
+                        }
+                    });
+                    
+                    // Update input when slider changes
+                    slider.addEventListener('input', function() {
+                        input.value = this.value;
+                        if (item.input === 'person_income' || item.input === 'loan_amnt') {
+                            calculateLoanPercentIncome();
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Calculate loan percent income
+        function calculateLoanPercentIncome() {
+            const income = parseFloat(document.getElementById('person_income').value) || 0;
+            const loanAmount = parseFloat(document.getElementById('loan_amnt').value) || 0;
+            
+            if (income > 0) {
+                const percent = (loanAmount / income).toFixed(2);
+                document.getElementById('loan_percent_income').value = percent;
+                document.getElementById('loan_percent_income_slider').value = percent;
+            }
+        }
+        
+        // Check API status
+        async function checkApiStatus() {
+            try {
+                serviceStatus.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+                modelStatus.textContent = 'Checking model...';
+                
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    serviceStatus.innerHTML = '<i class="fas fa-check-circle me-2"></i>Service Active';
+                    serviceStatus.className = 'status-badge status-success';
+                    
+                    // Check model status
+                    const modelResponse = await fetch(`${API_BASE_URL}/debug/models`);
+                    const modelData = await modelResponse.json();
+                    
+                    if (modelData.model_loaded) {
+                        modelStatus.textContent = `Using ${modelData.using_trained_model} model`;
+                        modelInfo.textContent = `${modelData.using_trained_model} model loaded`;
+                        
+                        if (modelData.using_trained_model === 'dummy') {
+                            modelStatus.className = 'text-warning';
+                            modelInfo.className = 'small text-warning mb-0';
+                        } else {
+                            modelStatus.className = 'text-success';
+                            modelInfo.className = 'small text-success mb-0';
+                        }
+                    }
+                    
+                    showAlert('success', 'Service is healthy and ready!');
+                    return true;
+                } else {
+                    throw new Error('Service not healthy');
+                }
+            } catch (error) {
+                serviceStatus.innerHTML = '<i class="fas fa-times-circle me-2"></i>Service Offline';
+                serviceStatus.className = 'status-badge status-danger';
+                modelStatus.textContent = 'Cannot connect to service';
+                modelInfo.textContent = 'Service connection failed';
+                
+                showAlert('warning', 'Cannot connect to prediction service. Please check if Flask is running.');
+                console.error('API status check failed:', error);
+                return false;
+            }
+        }
+        
+        // Show API information
+        async function showApiInfo() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/debug/models`);
+                const data = await response.json();
+                
+                let message = `Model Type: ${data.model_type}<br>`;
+                message += `Scaler Type: ${data.scaler_type}<br>`;
+                message += `Using: ${data.using_trained_model} model<br>`;
+                
+                if (data.num_features) {
+                    message += `Features: ${data.num_features}<br>`;
+                }
+                
+                message += `HTML File: ${data.html_file_available ? 'Found' : 'Not found'}`;
+                
+                showAlert('info', message, 8000);
+            } catch (error) {
+                showAlert('error', 'Could not fetch API information');
+            }
+        }
+        
+        // Handle form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Check if service is available
+            const serviceOk = await checkApiStatus();
+            if (!serviceOk) {
+                showAlert('error', 'Cannot connect to prediction service. Please start the Flask server.');
+                return;
+            }
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Disable predict button and show loading
+            predictButton.disabled = true;
+            predictButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            loadingOverlay.style.display = 'flex';
+            resultCard.style.display = 'none';
+            
+            // Collect form data
+            const formData = {
+                person_age: parseFloat(document.getElementById('person_age').value),
+                person_income: parseFloat(document.getElementById('person_income').value),
+                person_emp_exp: parseFloat(document.getElementById('person_emp_exp').value) || 0,
+                loan_amnt: parseFloat(document.getElementById('loan_amnt').value),
+                loan_int_rate: parseFloat(document.getElementById('loan_int_rate').value),
+                loan_percent_income: parseFloat(document.getElementById('loan_percent_income').value),
+                cb_person_cred_hist_length: parseFloat(document.getElementById('cb_person_cred_hist_length').value) || 0,
+                credit_score: parseFloat(document.getElementById('credit_score').value),
+                person_gender: document.getElementById('person_gender').value,
+                person_home_ownership: document.getElementById('person_home_ownership').value,
+                loan_intent: document.getElementById('loan_intent').value,
+                previous_loan_defaults_on_file: document.getElementById('previous_loan_defaults_on_file').value,
+                loan_grade: document.getElementById('loan_grade').value,
+                debt_to_income_ratio: parseFloat(document.getElementById('debt_to_income_ratio').value) || 0.35
+            };
+            
+            try {
+                console.log('Sending prediction request:', formData);
+                
+                // Send prediction request
+                const response = await fetch(`${API_BASE_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                console.log('Received prediction:', result);
+                
+                if (result.status === 'success') {
+                    displayResult(result);
+                    showAlert('success', `Prediction completed using ${result.model_used} model`);
+                } else {
+                    throw new Error(result.message || 'Prediction failed');
+                }
+                
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showAlert('danger', `Error: ${error.message}. Using fallback prediction.`);
+                
+                // Fallback display with simulated data
+                displayFallbackResult(formData);
+            } finally {
+                // Re-enable predict button and hide loading
+                predictButton.disabled = false;
+                predictButton.innerHTML = '<i class="fas fa-bolt me-2"></i> Predict Loan Approval';
+                loadingOverlay.style.display = 'none';
+            }
+        });
+        
+        // Validate form
+        function validateForm() {
+            const requiredFields = [
+                { id: 'person_age', name: 'Age', min: 18, max: 100 },
+                { id: 'person_income', name: 'Annual Income', min: 10000, max: 1000000 },
+                { id: 'loan_amnt', name: 'Loan Amount', min: 1000, max: 500000 },
+                { id: 'loan_int_rate', name: 'Interest Rate', min: 1, max: 30 },
+                { id: 'credit_score', name: 'Credit Score', min: 300, max: 850 },
+                { id: 'loan_grade', name: 'Loan Grade' }
+            ];
+            
+            const errors = [];
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const value = element.value;
+                
+                if (!value || value === '') {
+                    errors.push(`${field.name} is required`);
+                } else if (field.min !== undefined && field.max !== undefined) {
+                    const numValue = parseFloat(value);
+                    if (numValue < field.min || numValue > field.max) {
+                        errors.push(`${field.name} must be between ${field.min} and ${field.max}`);
+                    }
+                }
+            });
+            
+            // Additional validation
+            const loanAmount = parseFloat(document.getElementById('loan_amnt').value);
+            const income = parseFloat(document.getElementById('person_income').value);
+            if (loanAmount > income * 2) {
+                errors.push('Loan amount should not exceed 2x annual income');
+            }
+            
+            if (errors.length > 0) {
+                showAlert('warning', `Please fix the following:<br>• ${errors.join('<br>• ')}`);
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Display prediction result
+        function displayResult(result) {
+            // Update probability circle
+            const probability = Math.round(result.probability * 100);
+            const probabilityCircle = document.getElementById('probabilityCircle');
+            probabilityCircle.textContent = `${probability}%`;
+            probabilityCircle.className = 'probability-circle';
+            
+            if (result.prediction === 'approved') {
+                probabilityCircle.classList.add('probability-approved');
+                document.getElementById('predictionResult').textContent = 'Approved';
+                document.getElementById('predictionText').textContent = 'Loan likely to be approved';
+            } else {
+                probabilityCircle.classList.add('probability-rejected');
+                document.getElementById('predictionResult').textContent = 'Rejected';
+                document.getElementById('predictionText').textContent = 'Loan likely to be rejected';
+            }
+            
+            // Update confidence values
+            const confidencePercent = Math.round(result.confidence * 100);
+            document.getElementById('confidenceValue').textContent = `${confidencePercent}%`;
+            document.getElementById('approvalProbability').textContent = `${Math.round(result.probabilities.approved * 100)}%`;
+            document.getElementById('rejectionProbability').textContent = `${Math.round(result.probabilities.rejected * 100)}%`;
+            
+            // Update risk factors
+            const riskFactorsDiv = document.getElementById('riskFactors');
+            riskFactorsDiv.innerHTML = '';
+            
+            if (result.risk_factors && result.risk_factors.length > 0) {
+                result.risk_factors.forEach(factor => {
+                    const div = document.createElement('div');
+                    div.className = 'risk-factors';
+                    div.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${factor}`;
+                    riskFactorsDiv.appendChild(div);
+                });
+            } else {
+                riskFactorsDiv.innerHTML = `
+                    <div class="risk-factors">
+                        <i class="fas fa-check-circle me-2"></i> No significant risk factors identified
+                    </div>
+                `;
+            }
+            
+            // Update recommendations
+            const recommendationsDiv = document.getElementById('recommendations');
+            recommendationsDiv.innerHTML = '';
+            
+            if (result.recommendations && result.recommendations.length > 0) {
+                result.recommendations.forEach(rec => {
+                    const div = document.createElement('div');
+                    div.className = 'recommendations';
+                    div.innerHTML = `<i class="fas fa-lightbulb me-2"></i> ${rec}`;
+                    recommendationsDiv.appendChild(div);
+                });
+            } else {
+                recommendationsDiv.innerHTML = `
+                    <div class="recommendations">
+                        <i class="fas fa-lightbulb me-2"></i> No specific recommendations
+                    </div>
+                `;
+            }
+            
+            // Show result card with animation
+            resultCard.style.display = 'block';
+            
+            // Scroll to result
+            setTimeout(() => {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        // Fallback result display
+        function displayFallbackResult(formData) {
+            // Simple fallback logic
+            const creditScore = formData.credit_score || 700;
+            const income = formData.person_income || 50000;
+            const loanAmount = formData.loan_amnt || 20000;
+            const loanToIncome = loanAmount / income;
+            
+            // Calculate probability based on simple rules
+            let probability = 0.7; // Base probability
+            
+            // Adjust based on credit score
+            if (creditScore >= 750) probability += 0.2;
+            else if (creditScore >= 650) probability += 0.1;
+            else if (creditScore < 600) probability -= 0.3;
+            
+            // Adjust based on loan-to-income ratio
+            if (loanToIncome < 0.3) probability += 0.1;
+            else if (loanToIncome > 0.5) probability -= 0.2;
+            
+            // Clamp probability
+            probability = Math.max(0.1, Math.min(0.95, probability));
+            
+            const isApproved = probability > 0.5;
+            
+            const fallbackResult = {
+                prediction: isApproved ? 'approved' : 'rejected',
+                probability: probability,
+                confidence: Math.abs(probability - 0.5) * 2,
+                probabilities: {
+                    approved: probability,
+                    rejected: 1 - probability
+                },
+                risk_factors: [],
+                recommendations: [],
+                model_used: 'fallback'
+            };
+            
+            // Add risk factors
+            if (creditScore < 650) {
+                fallbackResult.risk_factors.push(`Credit score (${creditScore}) could be improved`);
+            }
+            if (loanToIncome > 0.4) {
+                fallbackResult.risk_factors.push(`Loan-to-income ratio (${(loanToIncome*100).toFixed(1)}%) is high`);
+            }
+            
+            // Add recommendations
+            if (!isApproved) {
+                fallbackResult.recommendations.push("Consider improving your financial profile");
+            }
+            if (creditScore < 700) {
+                fallbackResult.recommendations.push("Work on improving your credit score");
+            }
+            
+            if (fallbackResult.risk_factors.length === 0) {
+                fallbackResult.risk_factors.push("No significant risk factors identified");
+            }
+            if (fallbackResult.recommendations.length === 0) {
+                fallbackResult.recommendations.push("Continue maintaining good financial habits");
+            }
+            
+            displayResult(fallbackResult);
+        }
+        
+        // Reset form
+        function resetForm() {
+            form.reset();
+            resultCard.style.display = 'none';
+            
+            // Reset to default values
+            document.getElementById('person_age').value = 35;
+            document.getElementById('person_age_slider').value = 35;
+            document.getElementById('person_income').value = 75000;
+            document.getElementById('person_income_slider').value = 75000;
+            document.getElementById('credit_score').value = 720;
+            document.getElementById('credit_score_slider').value = 720;
+            document.getElementById('loan_amnt').value = 25000;
+            document.getElementById('loan_amnt_slider').value = 25000;
+            document.getElementById('loan_int_rate').value = 6.5;
+            document.getElementById('loan_int_rate_slider').value = 6.5;
+            document.getElementById('loan_grade').value = 'A';
+            document.getElementById('person_gender').value = 'male';
+            document.getElementById('person_home_ownership').value = 'MORTGAGE';
+            document.getElementById('loan_intent').value = 'HOMEIMPROVEMENT';
+            document.getElementById('previous_loan_defaults_on_file').value = 'No';
+            document.getElementById('debt_to_income_ratio').value = 0.35;
+            
+            calculateLoanPercentIncome();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            showAlert('info', 'Form reset to default values');
+        }
+        
+        // Share result
+        function shareResult() {
+            if (!navigator.share) {
+                showAlert('info', 'Web Share API not supported in your browser');
+                return;
+            }
+            
+            const prediction = document.getElementById('predictionResult').textContent;
+            const probability = document.getElementById('probabilityCircle').textContent;
+            
+            navigator.share({
+                title: 'Loan Approval Prediction Result',
+                text: `My loan application has ${prediction.toLowerCase()} prediction with ${probability} probability.`,
+                url: window.location.href
+            }).catch(error => {
+                console.log('Error sharing:', error);
+            });
+        }
+        
+        // Show alert message
+        function showAlert(type, message, duration = 5000) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert-custom');
+            existingAlerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+            
+            // Create new alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-custom alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${getAlertIcon(type)} me-3"></i>
+                    <div>${message}</div>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            // Add to container
+            const container = document.getElementById('alertContainer') || document.body;
+            container.appendChild(alertDiv);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.opacity = '0';
+                    setTimeout(() => alertDiv.remove(), 300);
+                }
+            }, duration);
+        }
+        
+        // Get icon for alert type
+        function getAlertIcon(type) {
+            switch(type) {
+                case 'success': return 'check-circle';
+                case 'danger': return 'exclamation-circle';
+                case 'warning': return 'exclamation-triangle';
+                case 'info': return 'info-circle';
+                default: return 'info-circle';
+            }
+        }
+        
+        // Auto-refresh status every 30 seconds
+        setInterval(() => {
+            checkApiStatus();
+        }, 30000);
+    </script>
+</body>
+</html>

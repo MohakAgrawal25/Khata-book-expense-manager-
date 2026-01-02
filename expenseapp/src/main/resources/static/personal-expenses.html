@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Expenses - Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            position: relative;
+            padding: 0;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(5, 150, 105, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(52, 211, 153, 0.2) 0%, transparent 50%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg) scale(1); 
+            }
+            33% { 
+                transform: translateY(-15px) rotate(0.5deg) scale(1.02); 
+            }
+            66% { 
+                transform: translateY(10px) rotate(-0.5deg) scale(0.98); 
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: floatParticle 20s infinite linear;
+            backdrop-filter: blur(5px);
+        }
+
+        .particle:nth-child(1) {
+            width: 60px;
+            height: 60px;
+            top: 15%;
+            left: 15%;
+            animation-delay: 0s;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .particle:nth-child(2) {
+            width: 100px;
+            height: 100px;
+            top: 65%;
+            right: 15%;
+            animation-delay: -7s;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .particle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 25%;
+            left: 25%;
+            animation-delay: -14s;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        @keyframes floatParticle {
+            0% { 
+                transform: translate(0, 0) rotate(0deg) scale(1); 
+            }
+            25% { 
+                transform: translate(30px, -40px) rotate(90deg) scale(1.1); 
+            }
+            50% { 
+                transform: translate(60px, 20px) rotate(180deg) scale(0.9); 
+            }
+            75% { 
+                transform: translate(20px, 50px) rotate(270deg) scale(1.05); 
+            }
+            100% { 
+                transform: translate(0, 0) rotate(360deg) scale(1); 
+            }
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navigation - PROPERLY ALIGNED */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(5, 150, 105, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 1rem 0 !important;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar .container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #059669 !important;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            margin: 0 !important;
+        }
+
+        .navbar-nav {
+            display: flex !important;
+            align-items: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-wrap: nowrap;
+        }
+
+        .nav-link {
+            color: #374151 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem !important;
+            white-space: nowrap;
+            margin: 0 !important;
+        }
+
+        .nav-link:hover {
+            color: #059669 !important;
+            transform: translateY(-1px);
+        }
+
+        /* Main content wrapper */
+        .main-content {
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Welcome Section - PROPERLY ALIGNED */
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+            border: none !important;
+        }
+
+        .welcome-card .card-body {
+            padding: 3rem 2rem !important;
+            text-align: center;
+        }
+
+        .welcome-card h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #059669, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .welcome-card .lead {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            color: #4b5563;
+        }
+
+        /* Partition Cards - PROPERLY ALIGNED */
+        .partition-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            height: 100%;
+            border: none !important;
+            border-radius: 20px !important;
+            box-shadow: 
+                0 8px 20px rgba(5, 150, 105, 0.2),
+                0 2px 4px rgba(5, 150, 105, 0.1) !important;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+        }
+
+        .partition-card:hover {
+            transform: translateY(-8px) !important;
+            box-shadow: 
+                0 25px 50px rgba(5, 150, 105, 0.3),
+                0 4px 8px rgba(5, 150, 105, 0.2) !important;
+        }
+
+        .partition-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .partition-card .card-body {
+            padding: 3rem 2.5rem !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Feature Icons - PROPERLY ALIGNED */
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .card-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #4b5563;
+        }
+
+        /* Benefits/Features Sections - PROPERLY ALIGNED */
+        .benefits-section h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #6b7280 !important;
+        }
+
+        .benefits-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .benefits-list p {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            flex: 0 0 calc(50% - 0.5rem);
+        }
+
+        .benefits-list .fas {
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Button Alignment - PROPERLY ALIGNED */
+        .btn {
+            cursor: pointer !important;
+            user-select: none;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            outline: none;
+            font-weight: 600;
+            padding: 1rem 2.5rem !important;
+            border-radius: 15px !important;
+            box-shadow: 
+                0 8px 20px rgba(5, 150, 105, 0.2),
+                0 2px 4px rgba(5, 150, 105, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            margin-top: auto;
+            text-decoration: none !important;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 
+                0 15px 30px rgba(5, 150, 105, 0.3),
+                0 4px 8px rgba(5, 150, 105, 0.2) !important;
+            text-decoration: none !important;
+        }
+
+        .btn:active {
+            transform: translateY(-1px) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white !important;
+            border: 2px solid transparent !important;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            box-shadow: 
+                0 15px 30px rgba(5, 150, 105, 0.4),
+                0 4px 8px rgba(5, 150, 105, 0.3) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+            color: white !important;
+            border: 2px solid transparent !important;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d) !important;
+            box-shadow: 
+                0 15px 30px rgba(34, 197, 94, 0.4),
+                0 4px 8px rgba(22, 163, 74, 0.3) !important;
+        }
+
+        /* Modal Styles - PROPERLY ALIGNED */
+        .modal-content {
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(20px);
+            border-radius: 20px !important;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding: 1.5rem 2rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            margin: 0 !important;
+        }
+
+        .modal-body {
+            padding: 2rem !important;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Form Styles - PROPERLY ALIGNED */
+        .form-control {
+            padding: 0.875rem 1rem !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 10px !important;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Alert/Message Box */
+        .alert {
+            border-radius: 12px !important;
+            border: 1px solid transparent !important;
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1) !important;
+            color: #065f46 !important;
+            border-color: rgba(16, 185, 129, 0.2) !important;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: #991b1b !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1) !important;
+            color: #92400e !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            border: 4px solid rgba(16, 185, 129, 0.2) !important;
+            border-top: 4px solid #10b981 !important;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Text Styles */
+        .text-primary {
+            color: #059669 !important;
+        }
+
+        .text-success {
+            color: #059669 !important;
+        }
+
+        .text-muted {
+            color: #6b7280 !important;
+        }
+
+        /* List Items */
+        .fas.fa-check.text-success {
+            color: #10b981 !important;
+        }
+
+        .fas.fa-star.text-warning {
+            color: #f59e0b !important;
+        }
+
+        /* Focus states for accessibility */
+        .btn:focus-visible,
+        .form-control:focus-visible,
+        .nav-link:focus-visible {
+            outline: 3px solid rgba(16, 185, 129, 0.5) !important;
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        /* Disabled states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn:disabled::before {
+            display: none;
+        }
+
+        /* Glow effect */
+        .glow {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: 1;
+            animation: glowMove 10s ease-in-out infinite;
+        }
+
+        .glow:nth-child(1) {
+            top: -80px;
+            left: -80px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+        }
+
+        .glow:nth-child(2) {
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -5s;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.3) 0%, transparent 70%);
+        }
+
+        @keyframes glowMove {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1) rotate(0deg); 
+            }
+            33% { 
+                transform: translate(30px, 30px) scale(1.1) rotate(120deg); 
+            }
+            66% { 
+                transform: translate(-20px, 40px) scale(0.9) rotate(240deg); 
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .partition-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .btn {
+                padding: 0.875rem 2rem !important;
+                font-size: 1rem;
+                min-height: 44px;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .feature-icon {
+                font-size: 3rem;
+            }
+            
+            .partition-card .card-body {
+                padding: 2rem 1.5rem !important;
+            }
+            
+            .welcome-card h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+            
+            .modal-dialog {
+                margin: 1rem;
+            }
+
+            .benefits-list p {
+                flex: 0 0 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 1rem 1.5rem !important;
+                width: 100%;
+            }
+            
+            .partition-card .card-body {
+                padding: 1.5rem 1rem !important;
+            }
+            
+            .feature-icon {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-card h1 {
+                font-size: 1.75rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Text selection styles */
+        ::selection {
+            background: rgba(16, 185, 129, 0.3);
+            color: #1f2937;
+        }
+
+        ::-moz-selection {
+            background: rgba(16, 185, 129, 0.3);
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add floating particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- Add glow effects -->
+    <div class="glow"></div>
+    <div class="glow"></div>
+
+    <!-- Navigation - PROPERLY ALIGNED -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-money-bill-wave"></i> Khata-Book
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/homepage.html">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Welcome Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card welcome-card">
+                        <div class="card-body">
+                            <h1>
+                                <i class="fas fa-wallet me-3"></i>Personal Expense Management
+                            </h1>
+                            <p class="lead">
+                                Take control of your finances with our comprehensive expense management system. 
+                                Create groups and track expenses effortlessly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Partition Section -->
+            <div class="row">
+                <!-- Create Expense Group Partition -->
+                <div class="col-md-6 mb-4">
+                    <div class="card partition-card">
+                        <div class="card-body">
+                            <div class="feature-icon text-primary">
+                                <i class="fas fa-folder-plus"></i>
+                            </div>
+                            <h3 class="card-title text-primary">Create Personal Expense Group</h3>
+                            <p class="card-text">
+                                Organize your expenses into logical groups to better track and manage your spending. 
+                                Create groups for specific time periods, projects, or categories to maintain better 
+                                financial control and analysis.
+                            </p>
+                            <div class="mb-4">
+                                <h5 class="text-muted mb-3">Key Benefits:</h5>
+                                <div class="benefits-list text-start">
+                                    <p><i class="fas fa-check text-success me-2"></i>Better organization</p>
+                                    <p><i class="fas fa-check text-success me-2"></i>Time tracking</p>
+                                    <p><i class="fas fa-check text-success me-2"></i>Budget monitoring</p>
+                                    <p><i class="fas fa-check text-success me-2"></i>Detailed reports</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                                <i class="fas fa-plus-circle me-2"></i>Create Expense Group
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Expenses Partition -->
+                <div class="col-md-6 mb-4">
+                    <div class="card partition-card">
+                        <div class="card-body">
+                            <div class="feature-icon text-success">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h3 class="card-title text-success">Manage Personal Expenses</h3>
+                            <p class="card-text">
+                                Take full control of your expenses with our comprehensive management system. 
+                                Add, edit, delete, and analyze your expenses with powerful tools designed 
+                                to help you make better financial decisions.
+                            </p>
+                            <div class="mb-4">
+                                <h5 class="text-muted mb-3">Main Features:</h5>
+                                <div class="benefits-list text-start">
+                                    <p><i class="fas fa-star text-warning me-2"></i>Add expenses</p>
+                                    <p><i class="fas fa-star text-warning me-2"></i>Edit expenses</p>
+                                    <p><i class="fas fa-star text-warning me-2"></i>Categorize spending</p>
+                                    <p><i class="fas fa-star text-warning me-2"></i>Track savings</p>
+                                </div>
+                            </div>
+                            <a href="manage-personal-expense.html" class="btn btn-success btn-lg">
+                                <i class="fas fa-cog me-2"></i>Manage Expenses
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal fade" id="createGroupModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-folder-plus"></i> Create Expense Group</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="messageBox" class="alert alert-dismissible fade show d-none" role="alert">
+                        <span id="messageText"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <form id="createGroupForm">
+                        <!-- Group Name Input -->
+                        <div class="mb-3">
+                            <label for="groupName" class="form-label">Group Name *</label>
+                            <input type="text" id="groupName" name="groupName" required
+                                class="form-control"
+                                placeholder="e.g., Monthly Expenses, Vacation Budget">
+                        </div>
+
+                        <!-- Group Description Input -->
+                        <div class="mb-3">
+                            <label for="groupDescription" class="form-label">Description (Optional)</label>
+                            <textarea id="groupDescription" name="groupDescription" rows="2"
+                                class="form-control"
+                                placeholder="Brief description of the group's purpose."></textarea>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="startDate" class="form-label">Start Date *</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="endDate" class="form-label">End Date *</label>
+                                <input type="date" class="form-control" id="endDate" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createGroupBtn" onclick="createGroup()">
+                        <i class="fas fa-save"></i> Create Group
+                    </button>
+                    <div class="spinner-border spinner-border-sm loading-spinner text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        // Global variables
+        const API_BASE_URL = "/api/expense-groups";
+        let CURRENT_USERNAME = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default for dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+
+            // Check authentication and load user info
+            checkAuthAndLoadUser();
+        });
+
+        // --- AUTHENTICATION FUNCTIONS ---
+        function decodeJwtUsername(token) {
+            if (!token) return null;
+            try {
+                const payload = token.split('.')[1];
+                const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                const data = JSON.parse(decoded);
+                return data.username || data.sub || null;
+            } catch {
+                return null;
+            }
+        }
+
+        function isTokenExpired(token) {
+            try {
+                const payload = decodeJwtToken(token);
+                if (!payload || !payload.exp) return true;
+
+                const expiry = payload.exp * 1000;
+                const now = Date.now();
+                return now >= expiry;
+            } catch {
+                return true;
+            }
+        }
+
+        function decodeJwtToken(token) {
+            if (!token) return null;
+            try {
+                const payload = token.split('.')[1];
+                const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                return JSON.parse(decoded);
+            } catch {
+                return null;
+            }
+        }
+
+        function checkAuthAndRedirect() {
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                console.log("No JWT token found. Redirecting to login...");
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            if (isTokenExpired(token)) {
+                console.log("JWT token expired. Redirecting to login...");
+                localStorage.removeItem('jwtToken');
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            return true;
+        }
+
+        function checkAuthAndLoadUser() {
+            if (!checkAuthAndRedirect()) {
+                return;
+            }
+
+            const token = localStorage.getItem('jwtToken');
+            const username = decodeJwtUsername(token);
+            if (username) {
+                CURRENT_USERNAME = username.toLowerCase();
+                document.getElementById('createGroupBtn').disabled = false;
+            } else {
+                localStorage.removeItem('jwtToken');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // --- MESSAGE DISPLAY ---
+        function showMessage(message, type) {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            
+            messageText.textContent = message;
+            messageBox.className = 'alert alert-dismissible fade show';
+            
+            // Remove existing alert classes
+            messageBox.classList.remove('alert-success', 'alert-danger', 'alert-warning', 'd-none');
+            
+            // Add appropriate class
+            if (type === 'success') {
+                messageBox.classList.add('alert-success');
+            } else if (type === 'error') {
+                messageBox.classList.add('alert-danger');
+            } else if (type === 'warning') {
+                messageBox.classList.add('alert-warning');
+            }
+            
+            // Auto-hide after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('d-none');
+                }, 5000);
+            }
+        }
+
+        // --- CREATE GROUP FUNCTION ---
+        async function createGroup() {
+            console.log('Create group function called');
+            
+            // Check authentication first
+            if (!checkAuthAndRedirect()) {
+                return;
+            }
+
+            const groupName = document.getElementById('groupName').value.trim();
+            const groupDescription = document.getElementById('groupDescription').value.trim();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            console.log('Form data:', { groupName, groupDescription, startDate, endDate });
+
+            // Basic validation
+            if (!groupName) {
+                showMessage('Please enter a group name', 'warning');
+                return;
+            }
+
+            if (!startDate || !endDate) {
+                showMessage('Please select both start and end dates', 'warning');
+                return;
+            }
+
+            if (new Date(startDate) > new Date(endDate)) {
+                showMessage('End date cannot be before start date', 'warning');
+                return;
+            }
+
+            const formData = {
+                title: groupName,
+                description: groupDescription,
+                fromDate: startDate + 'T00:00:00Z',
+                toDate: endDate + 'T23:59:59Z'
+            };
+
+            console.log('Sending data to API:', formData);
+
+            // Show loading state
+            const createBtn = document.getElementById('createGroupBtn');
+            const spinner = document.querySelector('.loading-spinner');
+            createBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            try {
+                const jwtToken = localStorage.getItem('jwtToken');
+                if (!jwtToken) {
+                    showMessage('Session token missing. Please log in again.', 'error');
+                    return;
+                }
+
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('API Response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage(`Group '${data.title || groupName}' created successfully!`, 'success');
+                    
+                    // Close modal and reset form
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createGroupModal'));
+                    setTimeout(() => {
+                        modal.hide();
+                        document.getElementById('createGroupForm').reset();
+                        
+                        // Reset dates to today
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById('startDate').value = today;
+                        document.getElementById('endDate').value = today;
+                    }, 1500);
+                    
+                } else {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    
+                    let errorMessage = `Creation failed (Status ${response.status})`;
+                    if (errorText) {
+                        errorMessage += `: ${errorText}`;
+                    } else {
+                        errorMessage += ': Please check your input and try again.';
+                    }
+                    
+                    showMessage(errorMessage, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Network Error:', error);
+                showMessage('Network error: Could not connect to server.', 'error');
+            } finally {
+                // Hide loading state
+                createBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Add form submission handler
+        document.getElementById('createGroupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            createGroup();
+        });
+
+        // Reset message box when modal is opened
+        document.getElementById('createGroupModal').addEventListener('show.bs.modal', function() {
+            document.getElementById('messageBox').classList.add('d-none');
+        });
+    </script>
+</body>
+</html>

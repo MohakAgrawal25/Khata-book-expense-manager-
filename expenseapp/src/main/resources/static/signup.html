@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Expense Tracker</title>
+    <link rel="stylesheet" href="signup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated background elements -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="glow"></div>
+    <div class="glow"></div>
+
+    <div class="signup-container">
+        <div class="logo-header">
+            <div class="money-icon">💰</div>
+            <h1>Join Khata-Book</h1>
+        </div>
+        
+        <div class="welcome-text">
+            Start tracking your expenses with friends and family
+        </div>
+        
+        <div class="username-note">
+            Username must be in lowercase letters only
+        </div>
+        
+        <div id="signupResult" class="hidden"></div>
+
+        <form id="signupForm" onsubmit="handleSignup(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required placeholder="Enter your username">
+                <div class="input-hint">Only lowercase letters and numbers allowed</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="Enter your email">
+                <div class="input-hint">We'll never share your email with anyone</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Create a strong password">
+                <div class="input-hint">can be of any size but strong enough</div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+                <div class="input-hint">Re-enter your password to confirm</div>
+            </div>
+
+            <!-- <div class="terms-group">
+                <input type="checkbox" id="terms" required>
+                <label for="terms" class="terms-label">
+                    I agree to the <a href="/terms" class="terms-link">Terms of Service</a> and <a href="/privacy" class="terms-link">Privacy Policy</a>
+                </label>
+            </div> -->
+
+            <button type="submit" id="signupButton" class="signup-button">
+                <span class="button-text">Create Account</span>
+                <div class="button-loader"></div>
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script src="signup.js"></script>
+</body>
+</html>

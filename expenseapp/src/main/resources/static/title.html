@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Expenses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 sm:p-8">
+
+    <header class="mb-8">
+        <button onclick="window.history.back();"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200 mb-4 flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back to Groups</span>
+        </button>
+
+        <h1 id="groupTitle" class="text-4xl font-extrabold text-gray-900">...</h1>
+        <p class="text-xl text-gray-600" id="groupIdDisplay">Group ID: ...</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 class="text-2xl font-semibold text-gray-800">Expenses</h2>
+            <button onclick="alert('Open form to add new expense to Group ID: ' + document.getElementById('groupIdDisplay').textContent.replace('Group ID: ', ''));"
+                    class="bg-primary-green hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200">
+                + Add Expense
+            </button>
+        </div>
+        
+        <div id="expensesList" class="space-y-4">
+            <p class="text-center p-8 text-gray-500">No expenses recorded yet.</p>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const groupId = params.get('groupId');
+            const groupName = params.get('groupName');
+
+            if (groupId && groupName) {
+                document.getElementById('groupTitle').textContent = decodeURIComponent(groupName);
+                document.getElementById('groupIdDisplay').textContent = `Group ID: ${groupId}`;
+                
+                // TODO: Add logic here to fetch expenses for this groupId
+                // fetchExpensesForGroup(groupId, localStorage.getItem('jwtToken')); 
+            } else {
+                document.getElementById('groupTitle').textContent = "Group Not Found";
+                document.getElementById('groupIdDisplay').textContent = "Invalid URL parameters.";
+            }
+        });
+    </script>
+</body>
+</html>

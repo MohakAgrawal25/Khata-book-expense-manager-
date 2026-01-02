@@ -1,0 +1,702 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden; /* Changed from hidden */
+    padding: 20px 0; /* Added padding for scrollable area */
+}
+
+/* Animated background elements - FIXED POSITION */
+body::before {
+    content: '';
+    position: fixed; /* Changed from absolute */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(5, 150, 105, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(52, 211, 153, 0.2) 0%, transparent 50%);
+    animation: float 8s ease-in-out infinite;
+    z-index: -1; /* Ensure it stays behind content */
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg) scale(1); 
+    }
+    33% { 
+        transform: translateY(-15px) rotate(0.5deg) scale(1.02); 
+    }
+    66% { 
+        transform: translateY(10px) rotate(-0.5deg) scale(0.98); 
+    }
+}
+
+/* Floating particles - FIXED POSITION */
+.particle {
+    position: fixed; /* Changed from absolute */
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    animation: floatParticle 20s infinite linear;
+    backdrop-filter: blur(5px);
+    z-index: -1; /* Ensure they stay behind content */
+}
+
+.particle:nth-child(1) {
+    width: 60px;
+    height: 60px;
+    top: 15%;
+    left: 15%;
+    animation-delay: 0s;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.particle:nth-child(2) {
+    width: 100px;
+    height: 100px;
+    top: 65%;
+    right: 15%;
+    animation-delay: -7s;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.particle:nth-child(3) {
+    width: 80px;
+    height: 80px;
+    bottom: 25%;
+    left: 25%;
+    animation-delay: -14s;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes floatParticle {
+    0% { 
+        transform: translate(0, 0) rotate(0deg) scale(1); 
+    }
+    25% { 
+        transform: translate(30px, -40px) rotate(90deg) scale(1.1); 
+    }
+    50% { 
+        transform: translate(60px, 20px) rotate(180deg) scale(0.9); 
+    }
+    75% { 
+        transform: translate(20px, 50px) rotate(270deg) scale(1.05); 
+    }
+    100% { 
+        transform: translate(0, 0) rotate(360deg) scale(1); 
+    }
+}
+
+/* Floating money shapes - FIXED POSITION */
+.floating-shape {
+    position: fixed; /* Changed from absolute */
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    animation: floatShape 15s infinite ease-in-out;
+    backdrop-filter: blur(3px);
+    z-index: -1; /* Ensure they stay behind content */
+}
+
+.shape-1 {
+    width: 40px;
+    height: 20px;
+    top: 20%;
+    right: 20%;
+    animation-delay: 0s;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.shape-2 {
+    width: 30px;
+    height: 15px;
+    bottom: 30%;
+    left: 20%;
+    animation-delay: -5s;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.shape-3 {
+    width: 25px;
+    height: 12px;
+    top: 60%;
+    left: 10%;
+    animation-delay: -10s;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes floatShape {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        opacity: 0.7;
+    }
+    25% { 
+        transform: translateY(-25px) rotate(90deg); 
+        opacity: 1;
+    }
+    50% { 
+        transform: translateY(-10px) rotate(180deg); 
+        opacity: 0.8;
+    }
+    75% { 
+        transform: translateY(-30px) rotate(270deg); 
+        opacity: 0.9;
+    }
+}
+
+.signup-container {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 50px 40px;
+    box-shadow: 
+        0 25px 50px rgba(5, 150, 105, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    max-width: 480px;
+    width: 90%;
+    transform: translateY(0);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin: 20px 0; /* Added margin for scrollable area */
+    min-height: auto; /* Allow container to grow with content */
+}
+
+.signup-container:hover {
+    transform: translateY(-8px);
+    box-shadow: 
+        0 35px 60px rgba(5, 150, 105, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.logo-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.money-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    display: block;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { 
+        transform: translateY(0px) scale(1); 
+    }
+    50% { 
+        transform: translateY(-10px) scale(1.1); 
+    }
+}
+
+h1 {
+    color: #059669;
+    font-size: 2.3rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #059669, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-text {
+    color: #6b7280;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.username-note {
+    color: #059669;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 30px;
+    background: rgba(5, 150, 105, 0.1);
+    padding: 10px 16px;
+    border-radius: 12px;
+    border-left: 4px solid #059669;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+label {
+    display: block;
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 16px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: 'Inter', sans-serif;
+}
+
+input:focus {
+    outline: none;
+    border-color: #059669;
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+}
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+.input-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* Input error styles */
+.input-error {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* Terms and conditions checkbox */
+.terms-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 15px;
+    background: rgba(5, 150, 105, 0.05);
+    border-radius: 12px;
+    border-left: 3px solid #059669;
+}
+
+.terms-group input[type="checkbox"] {
+    margin-top: 2px;
+    transform: scale(1.2);
+    accent-color: #059669;
+}
+
+.terms-label {
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.4;
+    margin: 0;
+    font-weight: 400;
+}
+
+.terms-link {
+    color: #059669;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.terms-link:hover {
+    text-decoration: underline;
+}
+
+.signup-button {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.signup-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.signup-button:hover::before {
+    left: 100%;
+}
+
+.signup-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(5, 150, 105, 0.4);
+    background: linear-gradient(135deg, #047857, #059669);
+}
+
+.signup-button:active {
+    transform: translateY(-1px);
+}
+
+.signup-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.signup-button:disabled:hover::before {
+    left: -100%;
+}
+
+.button-loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.button-text {
+    transition: opacity 0.3s ease;
+}
+
+#signupResult {
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Glow effect - FIXED POSITION */
+.glow {
+    position: fixed; /* Changed from absolute */
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(5, 150, 105, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(50px);
+    z-index: -1; /* Ensure they stay behind content */
+    animation: glowMove 10s ease-in-out infinite;
+}
+
+.glow:nth-child(1) {
+    top: -80px;
+    left: -80px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+}
+
+.glow:nth-child(2) {
+    bottom: -80px;
+    right: -80px;
+    animation-delay: -5s;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.3) 0%, transparent 70%);
+}
+
+@keyframes glowMove {
+    0%, 100% { 
+        transform: translate(0, 0) scale(1) rotate(0deg); 
+    }
+    33% { 
+        transform: translate(30px, 30px) scale(1.1) rotate(120deg); 
+    }
+    66% { 
+        transform: translate(-20px, 40px) scale(0.9) rotate(240deg); 
+    }
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 25px;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.login-link a {
+    color: #059669;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #047857;
+    text-decoration: underline;
+}
+
+/* Success/Error message styles */
+.bg-red-100 {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+}
+
+.text-red-800 {
+    color: #991b1b;
+}
+
+.bg-green-100 {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.text-green-800 {
+    color: #166534;
+}
+
+/* Loading state */
+.loading .button-text {
+    opacity: 0;
+}
+
+.loading .button-loader {
+    display: block;
+}
+
+/* Password strength indicator */
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak {
+    background: #ef4444;
+    width: 25%;
+}
+
+.strength-medium {
+    background: #f59e0b;
+    width: 50%;
+}
+
+.strength-strong {
+    background: #10b981;
+    width: 100%;
+}
+
+/* Responsive design with scroll fixes */
+@media (max-width: 768px) {
+    body {
+        padding: 10px 0;
+        align-items: flex-start; /* Align to top on mobile for better scrolling */
+        min-height: 100vh;
+        height: auto;
+    }
+
+    .signup-container {
+        padding: 40px 30px;
+        margin: 10px;
+        max-width: 95%;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .money-icon {
+        font-size: 2.5rem;
+    }
+
+    /* Reduce spacing on mobile to fit more content */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .terms-group {
+        margin-bottom: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 5px 0;
+    }
+
+    .signup-container {
+        padding: 30px 20px;
+        margin: 5px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .money-icon {
+        font-size: 2rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 14px 16px;
+    }
+
+    .signup-button {
+        padding: 16px;
+    }
+
+    .welcome-text {
+        font-size: 1rem;
+    }
+
+    .terms-group {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px;
+    }
+
+    /* Further reduce spacing for very small screens */
+    .logo-header {
+        margin-bottom: 15px;
+    }
+
+    .username-note {
+        margin-bottom: 20px;
+        padding: 8px 12px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+    .signup-container {
+        padding: 25px 15px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    .welcome-text {
+        font-size: 0.9rem;
+    }
+
+    .username-note {
+        font-size: 0.8rem;
+    }
+
+    label {
+        font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+
+    .signup-button {
+        padding: 14px;
+        font-size: 1rem;
+    }
+}
+
+/* Container scroll for very short screens */
+@media (max-height: 700px) {
+    .signup-container {
+        max-height: 90vh;
+        overflow-y: auto;
+        margin: 5vh auto;
+    }
+    
+    .signup-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .signup-container::-webkit-scrollbar-track {
+        background: rgba(5, 150, 105, 0.1);
+        border-radius: 3px;
+    }
+    
+    .signup-container::-webkit-scrollbar-thumb {
+        background: #059669;
+        border-radius: 3px;
+    }
+    
+    .signup-container::-webkit-scrollbar-thumb:hover {
+        background: #047857;
+    }
+}
+
+/* Tall screens - center vertically */
+@media (min-height: 800px) {
+    body {
+        align-items: center;
+    }
+}
+
+/* Input validation states */
+input.valid {
+    border-color: #10b981;
+}
+
+input.invalid {
+    border-color: #ef4444;
+}
+
+/* Ripple effect for buttons */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}

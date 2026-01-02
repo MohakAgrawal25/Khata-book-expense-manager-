@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Groups - Expense Tracker</title>
+    <link rel="stylesheet" href="manage-groups.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Animated background elements -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    
+    <!-- Floating money shapes -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    
+    <!-- Glow effects -->
+    <div class="glow"></div>
+    <div class="glow"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>My Groups</h1>
+            <div class="header-actions">
+                <button onclick="navigateToDashboard()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                <button onclick="navigateToCreateGroup()" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Create New Group
+                </button>
+            </div>
+        </div>
+
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                View and manage all groups you are a member of
+            </div>
+        </div>
+
+        <div class="content-container">
+            <div id="auth-status" class="auth-status">
+                <p class="status-text">Status: <span id="auth-message">Attempting to fetch data...</span></p>
+            </div>
+
+            <div id="group-content">
+                <div id="loading" class="loading-container">
+                    <div class="loading-spinner" role="status"></div>
+                    <p class="loading-text">Loading your groups...</p>
+                </div>
+
+                <div id="group-list" class="group-grid">
+                    <!-- Groups will be dynamically inserted here -->
+                </div>
+
+                <div id="error-message" class="error-container hidden">
+                    <p class="error-title">Error Fetching Groups</p>
+                    <p class="error-details" id="error-details"></p>
+                    <p class="error-help">Action Required: Ensure a valid JWT is in localStorage with the key `jwtToken`.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = '/api/my-groups'; 
+        const loadingEl = document.getElementById('loading');
+        const groupListEl = document.getElementById('group-list');
+        const errorEl = document.getElementById('error-message');
+        const errorDetailsEl = document.getElementById('error-details');
+        const authMessageEl = document.getElementById('auth-message');
+
+        // Navigation functions
+        function navigateToDashboard() {
+            if (checkAuthAndRedirect()) {
+                window.location.href = 'homepage.html';
+            }
+        }
+
+        function navigateToCreateGroup() {
+            if (checkAuthAndRedirect()) {
+                window.location.href = 'create-group.html';
+            }
+        }
+
+        // Auth check function
+        function checkAuthAndRedirect() {
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Helper function for exponential backoff retry logic
+        async function fetchWithRetry(url, options, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * Converts a group name and ID into a secure, URL-friendly slug with ID embedded.
+         */
+        function createUrlSlug(name, id) {
+            const cleanName = name.toLowerCase()
+                            .trim()
+                            .replace(/[^a-z0-9\s-]/g, "") // Remove special characters except spaces/hyphens
+                            .replace(/[\s-]+/g, '_')     // Replace spaces/hyphens with a single underscore
+                            .replace(/_+$/, '');          // Remove trailing underscores
+            // Appends the ID to the slug for uniqueness without exposing it in the query param
+            return `${cleanName}_${id}`; 
+        }
+
+        /**
+         * Navigates to the generic detail page, passing the group ID in the URL.
+         */
+        function viewGroupDetails(groupName, groupId) {
+            const slug = createUrlSlug(groupName, groupId);
+            // We use a single template and pass the slug
+            window.location.href = `group_details_template.html?slug=${slug}`;
+        }
+
+        function renderGroups(groups) {
+            groupListEl.innerHTML = ''; 
+
+            if (groups.length === 0) {
+                groupListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <p class="empty-title">No Groups Found</p>
+                        <p class="empty-description">You are not yet a member of any groups.</p>
+                        <button onclick="navigateToCreateGroup()" class="btn btn-primary empty-action">
+                            Create Your First Group
+                        </button>
+                    </div>
+                `;
+                authMessageEl.textContent = 'Data successfully fetched.';
+                return;
+            }
+
+            groups.forEach(group => {
+                const memberCount = group.totalMembers === 1 ? '1 Member' : `${group.totalMembers} Members`;
+                const createdDate = new Date(group.createdAt).toLocaleDateString();
+
+                const cardHtml = `
+                    <div class="group-card">
+                        <div class="group-card-header">
+                            <h3 class="group-name">${group.name}</h3>
+                            <p class="group-description">${group.description || 'No description provided.'}</p>
+                        </div>
+                        
+                        <div class="group-card-details">
+                            <div class="detail-item">
+                                <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span class="detail-text">${memberCount}</span>
+                            </div>
+                            <div class="detail-item">
+                                <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span class="detail-text">Created by: <strong>${group.createdBy}</strong></span>
+                            </div>
+                            <div class="detail-item">
+                                <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span class="detail-text">Since: <strong>${createdDate}</strong></span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="viewGroupDetails('${group.name.replace(/'/g, "\\'")}', ${group.id})" 
+                            class="group-action-btn">
+                            View Details
+                        </button>
+                    </div>
+                `;
+                groupListEl.innerHTML += cardHtml;
+            });
+            authMessageEl.textContent = 'Data successfully fetched.';
+        }
+
+        /**
+         * Fetches the user's groups from the dedicated backend endpoint, sending the JWT.
+         */
+        async function fetchUserGroups() {
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            groupListEl.innerHTML = '';
+            authMessageEl.textContent = 'Attempting to fetch data with JWT...';
+            
+            const token = localStorage.getItem('jwtToken'); 
+            
+            if (!token) {
+                loadingEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+                errorDetailsEl.textContent = 'No JWT token found in local storage. Please log in first.';
+                authMessageEl.textContent = 'Authentication Failed: No token.';
+                return;
+            }
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error(`Authentication failed. Status: ${response.status}. Token may be invalid or expired.`);
+                }
+
+                const groups = await response.json();
+                
+                loadingEl.classList.add('hidden');
+                renderGroups(groups);
+
+            } catch (error) {
+                console.error('Failed to fetch user groups:', error);
+                loadingEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+                errorDetailsEl.textContent = `API call failed: ${error.message}.`;
+                authMessageEl.textContent = 'Failed to fetch. Token may be expired or invalid.';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAuthAndRedirect()) {
+                fetchUserGroups();
+            }
+        });
+    </script>
+</body>
+</html>

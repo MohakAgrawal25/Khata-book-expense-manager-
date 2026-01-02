@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Group - Expense Tracker</title>
+    <link rel="stylesheet" href="create-group.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Animated background elements -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    
+    <!-- Floating money shapes -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    
+    <!-- Glow effects -->
+    <div class="glow"></div>
+    <div class="glow"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Create New Group</h1>
+            <div class="header-actions">
+                <button onclick="navigateToDashboard()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                Create a new expense sharing group with friends and family
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div id="messageBox" class="message-box hidden" role="alert"></div>
+
+            <form id="createGroupForm" class="group-form">
+                <!-- Group Name Input -->
+                <div class="form-group">
+                    <label for="groupName" class="form-label">Group Name</label>
+                    <input type="text" id="groupName" name="groupName" required
+                        class="form-input"
+                        placeholder="e.g., Weekend Trip, Monthly Rent">
+                </div>
+
+                <!-- Group Description (Optional) Input -->
+                <div class="form-group">
+                    <label for="groupDescription" class="form-label">Description (Optional)</label>
+                    <textarea id="groupDescription" name="groupDescription" rows="3"
+                        class="form-textarea"
+                        placeholder="Brief description of the group's purpose."></textarea>
+                </div>
+
+                <!-- Number of Members Input -->
+                <div class="form-group">
+                    <label for="numberOfMembers" class="form-label">Total Members (Including Yourself)</label>
+                    <input type="number" id="numberOfMembers" name="numberOfMembers" value="1" min="1" max="200" required
+                        class="form-input">
+                </div>
+
+                <!-- Dynamic Member List Container -->
+                <div class="members-section">
+                    <h3 class="members-title">Group Members</h3>
+                    <div id="memberList" class="member-list">
+                        <!-- Username inputs are dynamically placed here -->
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitButton" class="submit-btn">
+                    <span class="btn-text">Create Group</span>
+                    <svg class="btn-spinner hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const memberList = document.getElementById('memberList');
+        const numberOfMembersInput = document.getElementById('numberOfMembers');
+        const form = document.getElementById('createGroupForm');
+        const messageBox = document.getElementById('messageBox');
+        const submitButton = document.getElementById('submitButton');
+        const btnText = submitButton.querySelector('.btn-text');
+        const btnSpinner = submitButton.querySelector('.btn-spinner');
+        const API_BASE_URL = "/api/groups";
+        let CURRENT_USERNAME = null;
+        let redirectTimeout = null;
+
+        // --- JWT HANDLING ---
+        function decodeJwtUsername(token) {
+            if (!token) return null;
+            try {
+                const payload = token.split('.')[1];
+                const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                const data = JSON.parse(decoded);
+                return data.username || data.sub || null;
+            } catch {
+                return null;
+            }
+        }
+
+        function isTokenExpired(token) {
+            try {
+                const payload = decodeJwtToken(token);
+                if (!payload || !payload.exp) return true;
+
+                const expiry = payload.exp * 1000;
+                const now = Date.now();
+                return now >= expiry;
+            } catch {
+                return true;
+            }
+        }
+
+        function decodeJwtToken(token) {
+            if (!token) return null;
+            try {
+                const payload = token.split('.')[1];
+                const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                return JSON.parse(decoded);
+            } catch {
+                return null;
+            }
+        }
+
+        function checkAuthAndRedirect() {
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                console.log("No JWT token found. Redirecting to login...");
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            if (isTokenExpired(token)) {
+                console.log("JWT token expired. Redirecting to login...");
+                localStorage.removeItem('jwtToken');
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            return true;
+        }
+
+        function navigateToDashboard() {
+            // Clear any pending redirect timeout
+            if (redirectTimeout) {
+                clearTimeout(redirectTimeout);
+                redirectTimeout = null;
+            }
+            
+            if (checkAuthAndRedirect()) {
+                window.location.href = 'homepage.html';
+            }
+        }
+
+        function loadCreatorUsername() {
+            if (!checkAuthAndRedirect()) {
+                return;
+            }
+
+            const token = localStorage.getItem('jwtToken');
+            const username = decodeJwtUsername(token);
+            if (username) {
+                CURRENT_USERNAME = username.toLowerCase();
+                handleMemberCountChange();
+                // Remove the disabled attribute - let form validation handle it
+                submitButton.disabled = false;
+            } else {
+                localStorage.removeItem('jwtToken');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // --- UI UTILITIES ---
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box';
+            messageBox.classList.remove('hidden');
+
+            messageBox.classList.remove('message-error', 'message-success');
+            if (type === 'error') {
+                if (!message || message.trim() === 'Creation failed (Status 400):') {
+                    message = "Creation failed: A required username may be missing or incorrect. Please check all names and try again.";
+                }
+                messageBox.classList.add('message-error');
+            } else {
+                messageBox.classList.add('message-success');
+            }
+
+            clearTimeout(messageBox.timeout);
+            messageBox.timeout = setTimeout(() => messageBox.classList.add('hidden'), 5000);
+        }
+
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                btnText.textContent = 'Creating Group...';
+                btnSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                btnText.textContent = 'Create Group';
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        // --- MEMBER INPUT LOGIC ---
+        function handleMemberCountChange() {
+            if (!CURRENT_USERNAME) return;
+            let count = parseInt(numberOfMembersInput.value, 10);
+            const maxCount = 200;
+
+            if (isNaN(count) || count < 1) count = 1;
+            if (count > maxCount) count = maxCount;
+
+            numberOfMembersInput.value = count;
+            memberList.innerHTML = '';
+
+            // Member 1 is always the creator (read-only)
+            createUsernameInput(CURRENT_USERNAME, true, 1);
+
+            // Additional members (up to N)
+            for (let i = 2; i <= count; i++) {
+                createUsernameInput('', false, i);
+            }
+        }
+
+        function createUsernameInput(value, isCreator, index) {
+            const container = document.createElement('div');
+            container.className = 'member-input-container';
+
+            const label = document.createElement('label');
+            label.textContent = `Member ${index}:`;
+            label.className = 'member-label';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.name = 'memberUsername';
+            input.placeholder = isCreator ? 'Creator (You)' : 'Enter username';
+            input.className = 'member-input';
+
+            if (isCreator) {
+                input.readOnly = true;
+                input.classList.add('member-input-creator');
+            } else {
+                // Add validation for non-creator members
+                input.addEventListener('blur', validateMemberInput);
+            }
+
+            container.appendChild(label);
+            container.appendChild(input);
+            memberList.appendChild(container);
+        }
+
+        function validateMemberInput(e) {
+            const input = e.target;
+            const value = input.value.trim();
+            
+            if (value && value.length < 2) {
+                input.style.borderColor = '#ef4444';
+                showMessage('Username must be at least 2 characters long', 'error');
+            } else if (value && value === CURRENT_USERNAME) {
+                input.style.borderColor = '#ef4444';
+                showMessage('You are already added as the creator', 'error');
+            } else {
+                input.style.borderColor = '#10b981';
+            }
+        }
+
+        // --- FORM SUBMISSION ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!checkAuthAndRedirect()) {
+                return;
+            }
+
+            // Collect, trim, normalize, and filter usernames
+            let memberUsernames = Array.from(memberList.querySelectorAll('input[name="memberUsername"]'))
+                .map(i => i.value.trim().toLowerCase())
+                .filter(u => u.length > 0);
+
+            // Filter for unique usernames
+            memberUsernames = [...new Set(memberUsernames)];
+
+            const expectedMemberCount = parseInt(numberOfMembersInput.value, 10);
+            const actualUniqueMemberCount = memberUsernames.length;
+
+            // Validation
+            if (actualUniqueMemberCount < 1 || !memberUsernames.includes(CURRENT_USERNAME)) {
+                showMessage(`Error: The creator's username is missing or invalid. Please ensure you are logged in.`, 'error');
+                return;
+            }
+
+            // Check for duplicate usernames (excluding the creator)
+            const nonCreatorUsernames = memberUsernames.filter(u => u !== CURRENT_USERNAME);
+            const uniqueNonCreatorUsernames = [...new Set(nonCreatorUsernames)];
+            if (nonCreatorUsernames.length !== uniqueNonCreatorUsernames.length) {
+                showMessage('Error: Duplicate usernames found in member list. Please remove duplicates.', 'error');
+                return;
+            }
+
+            if (actualUniqueMemberCount < expectedMemberCount) {
+                showMessage(`Warning: You requested ${expectedMemberCount} members but only provided ${actualUniqueMemberCount} unique usernames.`, 'error');
+                return;
+            }
+
+            const jwtToken = localStorage.getItem('jwtToken');
+            if (!jwtToken) {
+                showMessage("Session token missing. Please log in again.", 'error');
+                return;
+            }
+
+            const groupName = document.getElementById('groupName').value.trim();
+            const groupDescription = document.getElementById('groupDescription').value.trim();
+
+            if (!groupName) {
+                showMessage('Please enter a group name', 'error');
+                return;
+            }
+
+            const requestBody = { 
+                name: groupName, 
+                description: groupDescription, 
+                memberUsernames: memberUsernames 
+            };
+
+            setLoadingState(true);
+
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const successMessage = `Group "${data.name || groupName}" created successfully! Redirecting to dashboard...`;
+                    showMessage(successMessage, 'success');
+
+                    // Clear form but keep the success message visible
+                    form.reset();
+                    numberOfMembersInput.value = 1;
+                    handleMemberCountChange();
+                    
+                    // Redirect to dashboard after 2 seconds to allow user to see the success message
+                    redirectTimeout = setTimeout(() => {
+                        navigateToDashboard();
+                    }, 2000);
+                } else {
+                    let errorMessage = `Creation failed (Status ${response.status})`;
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            errorMessage += `: ${errorText}`;
+                        }
+                    } catch {
+                        // If we can't read the error text, use generic message
+                    }
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (err) {
+                console.error('Network Error:', err);
+                showMessage('Network error: Could not connect to server. Please try again.', 'error');
+            } finally {
+                setLoadingState(false);
+            }
+        });
+
+        // --- INITIALIZE ---
+        numberOfMembersInput.addEventListener('change', handleMemberCountChange);
+        numberOfMembersInput.addEventListener('input', handleMemberCountChange);
+        document.addEventListener('DOMContentLoaded', loadCreatorUsername);
+
+        // Form validation
+        form.addEventListener('input', () => {
+            const groupName = document.getElementById('groupName').value.trim();
+            submitButton.disabled = !groupName;
+        });
+    </script>
+    <script src="auth.js"></script>
+</body>
+
+</html>
