@@ -55,11 +55,8 @@ graph TB
 - Maven 3.8+
 
 
-```
-
 ## 📁 Project Structure
 
-```
 khata-book/
 ├── backend/
 │   ├── src/main/java/com/khatabook/
